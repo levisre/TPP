@@ -69,21 +69,21 @@ namespace TablePlusPlus
 
             if (!Directory.Exists(targetDir))
             {
-                Console.WriteLine("Target Dir not valid! Please recheck", ConsoleColor.Red); 
+                PrintOut.Error("Target Dir not valid! Please recheck");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
             string targetFile = targetDir + "\\TablePlus.exe";
 
-            if (!File.Exists(targetFile)) 
-            { 
-                Console.WriteLine("Target File not found! Need: TablePlus.exe", ConsoleColor.Red);
+            if (!File.Exists(targetFile))
+            {
+                PrintOut.Error("Target File not found! Need: TablePlus.exe");
                 return;
             }
             string backupName = targetFile + ".bak";
             if (!File.Exists(backupName))
             {
-                Console.WriteLine("Creating Backup...", ConsoleColor.Green);
+                PrintOut.Info("Creating Backup...");
                 File.Copy(targetFile, backupName);
             }
 
@@ -98,7 +98,7 @@ namespace TablePlusPlus
                 var result = DoPatch();
                 if (!result)
                 {
-                    Console.WriteLine("Something not work!", ConsoleColor.Yellow);
+                    PrintOut.Warn("Something not work!");
                     Environment.Exit(0);
                 }
                 File.SetAttributes(targetFile, System.IO.FileAttributes.Normal);
@@ -107,11 +107,11 @@ namespace TablePlusPlus
 #else
                 _main.NativeWrite(targetFile);
 #endif
-                Console.WriteLine("Done!", ConsoleColor.Green);
+                PrintOut.Info("Done!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}", ConsoleColor.Red);
+                PrintOut.Error($"Exception: {ex.Message}");
             }
         }
 
@@ -204,7 +204,7 @@ namespace TablePlusPlus
                     if(body.Instructions[i+1].OpCode != OpCodes.Ldc_I4_1) continue;
                     if(body.Instructions[i+2].OpCode != OpCodes.Stfld) continue;
                     found = true;
-                    Console.WriteLine("Found target instructions", ConsoleColor.Cyan);
+                    PrintOut.Info("Found target instructions");
                     
                     newBody.Instructions.Add(body.Instructions[i]);
                     newBody.Instructions.Add(body.Instructions[i + 1]);
@@ -213,7 +213,7 @@ namespace TablePlusPlus
                     break;
                 }
                 if (!found) return false;
-                Console.WriteLine("Replacing Method body...", ConsoleColor.Cyan);
+                PrintOut.Info("Replacing Method body...");
                 newBody.Instructions.Add(new Instruction(OpCodes.Ret));
                 _method.Body.Instructions.Clear();
                 _method.Body = newBody;
@@ -221,10 +221,34 @@ namespace TablePlusPlus
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ConsoleColor.Red);
+                PrintOut.Error(ex.Message);
                 return false;
             }
         }
 #endif
+    }
+
+    public class PrintOut
+    {
+        public static void Info(string input)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(input);
+            Console.ResetColor();
+        }
+
+        public static void Warn(string input)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(input);
+            Console.ResetColor();
+        }
+
+        public static void Error(string input)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(input);
+            Console.ResetColor();
+        }
     }
 }
